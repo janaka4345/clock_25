@@ -86,13 +86,21 @@ export default function Home() {
   };
 
   const incrementSessionLength = () => {
-    setSessionLength((prev) => (prev >= 60 ? 60 : prev + 1));
+    if (sessionLength >= 60) {
+      return;
+    }
+    // setSessionLength((prev) => (prev >= 60 ? 60 : prev + 1));
+    setSessionLength((prev) => prev + 1);
   };
   const decrementSessionLength = () => {
     setSessionLength((prev) => (prev <= 1 ? 1 : prev - 1));
   };
   const incrementBreakLength = () => {
-    setBreakLength((prev) => (prev >= 60 ? 60 : prev + 1));
+    if (breakLength >= 60) {
+      return;
+    }
+    // setBreakLength((prev) => (prev >= 60 ? 60 : prev + 1));
+    setBreakLength((prev) => prev + 1);
   };
   const decrementBreakLength = () => {
     setBreakLength((prev) => (prev <= 1 ? 1 : prev - 1));

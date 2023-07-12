@@ -1,113 +1,345 @@
-import Image from 'next/image'
+"use client";
+import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
 
 export default function Home() {
+  const [sessionLength, setSessionLength] = useState(25);
+  const [breakLength, setBreakLength] = useState(5);
+  const [isType, setIsType] = useState(true);
+  const [totalSeconds, setTotalSeconds] = useState(sessionLength * 60);
+  const [timer, setTimer] = useState(null);
+  const [isPaused, setIsPaused] = useState(false);
+  const pauseRef = useRef(false);
+
+  useEffect(() => {
+    setTotalSeconds(breakLength * 60);
+  }, [breakLength]);
+
+  useEffect(() => {
+    setTotalSeconds(sessionLength * 60);
+  }, [sessionLength]);
+
+  useEffect(() => {
+    pauseRef.current = isPaused;
+  }, [isPaused]);
+
+  const startTimer = () => {
+    setTimer(
+      setInterval(() => {
+        if (!pauseRef.current) {
+          setTotalSeconds((prev) => (prev <= -1 ? 0 : prev - 1));
+        }
+      }, 1000)
+    );
+  };
+
+  const pauseTimer = () => {
+    setIsPaused(true);
+  };
+  const resumeTimer = () => {
+    setIsPaused(false);
+  };
+
+  const clearTimer = () => {
+    clearInterval(timer);
+    setSessionLength(25);
+    setTotalSeconds(25 * 60);
+    setBreakLength(5);
+    setIsPaused(false);
+    setTimer(null);
+    setIsType(true);
+    alarmStop();
+  };
+
+  const startStop = () => {
+    if (!timer && !isPaused) {
+      startTimer();
+      return;
+    }
+    if (timer && isPaused) {
+      resumeTimer();
+      return;
+    }
+    pauseTimer();
+  };
+  const adjustTimer = (totalSeconds) => {
+    if (totalSeconds >= 0) {
+      let minutes = Math.floor(totalSeconds / 60);
+      let seconds = totalSeconds % 60;
+      return `${padZero(minutes)}:${padZero(seconds)}`;
+    } else {
+      return `${padZero(0)}:${padZero(0)}`;
+    }
+  };
+
+  const padZero = (num) => {
+    return num.toString().padStart(2, "0");
+  };
+
+  const alarmPlay = () => {
+    document.getElementById("beep").play();
+  };
+  const alarmStop = () => {
+    let audio = document.getElementById("beep");
+    audio.pause();
+    audio.currentTime = 0;
+  };
+
+  const incrementSessionLength = () => {
+    setSessionLength((prev) => (prev >= 60 ? 60 : prev + 1));
+  };
+  const decrementSessionLength = () => {
+    setSessionLength((prev) => (prev <= 1 ? 1 : prev - 1));
+  };
+  const incrementBreakLength = () => {
+    setBreakLength((prev) => (prev >= 60 ? 60 : prev + 1));
+  };
+  const decrementBreakLength = () => {
+    setBreakLength((prev) => (prev <= 1 ? 1 : prev - 1));
+  };
+
+  useEffect(() => {
+    if (totalSeconds === -1) {
+      alarmPlay();
+      clearInterval(timer);
+
+      if (isType) {
+        setTotalSeconds(breakLength * 60);
+        setIsType(false);
+      } else {
+        setTotalSeconds(sessionLength * 60);
+        setIsType(true);
+      }
+      startTimer();
+    }
+  }, [totalSeconds]);
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">app/page.js</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div className=" relative max-w-[100dvw] max-h-[100dvh] flex flex-col  justify-center  items-center ">
+      <Image
+        src="/plaines.jpg"
+        fill
+        sizes="100dvw"
+        alt="lotus-background"
+        className=" absolute inset-0 -z-10 object-cover object-center brightness-50"
+      />
+      <div className=" w-1/2 h-fit">
+        <h1 className="mb-4  mx-auto w-fit text-4xl font-extrabold tracking-tight leading-none  md:text-5xl lg:text-6xl text-gray-200">
+          25 + 5 Clock
+        </h1>
+      </div>
+      <div className="flex flex-row gap-2">
+        <div className="  h-fit">
+          <label
+            id="break-label"
+            className="mb-8 text-lg  w-fit font-normal text-gray-200 lg:text-xl sm:px-16 lg:px-48 "
           >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+            Break Length{" "}
+          </label>
+          <div className="flex flex-row items-center justify-center">
+            <button
+              id="break-increment"
+              className="hover:scale-110"
+              onClick={incrementBreakLength}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="#fff"
+                viewBox="0 0 24 24"
+                strokeWidth={4}
+                stroke="#fff"
+                className="w-6 h-6"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M8.25 6.75L12 3m0 0l3.75 3.75M12 3v18"
+                />
+              </svg>
+            </button>
+            <div
+              id="break-length"
+              className="mb-8 text-lg  w-fit font-normal text-gray-200 lg:text-xl px-5"
+            >
+              {breakLength}
+            </div>
+            <button
+              id="break-decrement"
+              className="hover:scale-110"
+              onClick={decrementBreakLength}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={4}
+                stroke="#fff"
+                className="w-6 h-6"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15.75 17.25L12 21m0 0l-3.75-3.75M12 21V3"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div className="  h-fit">
+          <label
+            id="session-label"
+            className="mb-8 text-lg  w-fit font-normal text-gray-200 lg:text-xl sm:px-16 lg:px-48"
+          >
+            Session Length{" "}
+          </label>
+          <div className="flex flex-row items-center justify-center">
+            <button
+              id="session-increment"
+              className="hover:scale-110"
+              onClick={incrementSessionLength}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={4}
+                stroke="#fff"
+                className="w-6 h-6"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M8.25 6.75L12 3m0 0l3.75 3.75M12 3v18"
+                />
+              </svg>
+            </button>
+            <div
+              id="session-length"
+              className="mb-8 text-lg  w-fit font-normal text-gray-200 lg:text-xl px-5"
+            >
+              {sessionLength}
+            </div>
+            <button
+              id="session-decrement"
+              className="hover:scale-110"
+              onClick={decrementSessionLength}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={4}
+                stroke="#fff"
+                className="w-6 h-6"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15.75 17.25L12 21m0 0l-3.75-3.75M12 21V3"
+                />
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
+      <div
+        className={`min-w-[400px] min-h-[400px] flex justify-center flex-col  bg-transparent  border-[8px] ${
+          totalSeconds < 60 ? "border-red-500" : "border-gray-200"
+        } rounded-full shadow dark:bg-gray-800 dark:border-gray-700`}
+      >
+        <h1
+          className={`mb-4  mx-auto w-fit text-4xl font-extrabold tracking-tight leading-none  md:text-5xl lg:text-6xl ${
+            totalSeconds < 60 ? `text-red-500` : `text-gray-200`
+          }`}
+          id="timer-label"
+        >
+          {isType ? "Session" : "Break"}
+        </h1>
+        <div
+          className={`mb-4  mx-auto w-fit text-4xl font-extrabold tracking-tight leading-none  md:text-5xl lg:text-6xl ${
+            totalSeconds < 60 ? `text-red-500` : `text-gray-200`
+          }`}
+          id="time-left"
+        >
+          {adjustTimer(totalSeconds)}
+        </div>
       </div>
+      <div className=" w-1/2 flex flex-row justify-center h-fit">
+        <button id="start_stop" onClick={startStop}>
+          <div>
+            {!timer && !isPaused && (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 30 30"
+                strokeWidth={2}
+                stroke="#fff"
+                className="w-14 h-14 hover:scale-110"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"
+                />
+              </svg>
+            )}
+            {timer && (
+              <>
+                {isPaused ? (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 30 30"
+                    strokeWidth={2}
+                    stroke="#fff"
+                    className="w-14 h-14 hover:scale-110"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"
+                    />
+                  </svg>
+                ) : (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 30 30"
+                    strokeWidth={2}
+                    stroke="#fff"
+                    className="w-14 h-14 hover:scale-110"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M15.75 5.25v13.5m-7.5-13.5v13.5"
+                    />
+                  </svg>
+                )}
+              </>
+            )}
+          </div>
+        </button>
 
-      <div className="mb-32 grid text-center lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800 hover:dark:bg-opacity-30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore the Next.js 13 playground.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
+        <button id="reset" onClick={clearTimer}>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 30 30"
+            strokeWidth={2}
+            stroke="#fff"
+            className="w-14 h-14 hover:scale-110"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+        </button>
       </div>
-    </main>
-  )
+      <audio id="beep" src="/relaxing-145038.mp3" className="clip" />
+    </div>
+  );
 }

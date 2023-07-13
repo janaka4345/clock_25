@@ -8,12 +8,8 @@ export default function Home() {
   const [isType, setIsType] = useState(true);
   const [totalSeconds, setTotalSeconds] = useState(sessionLength * 60);
   const [timer, setTimer] = useState(null);
-  const [isPaused, setIsPaused] = useState(false);
+  const [isPaused, setIsPaused] = useState(true);
   const pauseRef = useRef(false);
-
-  useEffect(() => {
-    setTotalSeconds(breakLength * 60);
-  }, [breakLength]);
 
   useEffect(() => {
     setTotalSeconds(sessionLength * 60);
@@ -45,14 +41,15 @@ export default function Home() {
     setSessionLength(25);
     setTotalSeconds(25 * 60);
     setBreakLength(5);
-    setIsPaused(false);
+    setIsPaused(true);
     setTimer(null);
     setIsType(true);
     alarmStop();
   };
 
   const startStop = () => {
-    if (!timer && !isPaused) {
+    if (!timer && isPaused) {
+      setIsPaused(false);
       startTimer();
       return;
     }
@@ -141,7 +138,7 @@ export default function Home() {
               id="break-increment"
               className="hover:scale-110"
               onClick={incrementBreakLength}
-              disabled={breakLength >= 60}
+              disabled={breakLength >= 60 || !isPaused}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -168,7 +165,7 @@ export default function Home() {
               id="break-decrement"
               className="hover:scale-110"
               onClick={decrementBreakLength}
-              disabled={breakLength <= 1}
+              disabled={breakLength <= 1 || !isPaused}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -199,7 +196,7 @@ export default function Home() {
               id="session-increment"
               className="hover:scale-110"
               onClick={incrementSessionLength}
-              disabled={sessionLength >= 60}
+              disabled={sessionLength >= 60 || !isPaused}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -226,7 +223,7 @@ export default function Home() {
               id="session-decrement"
               className="hover:scale-110"
               onClick={decrementSessionLength}
-              disabled={sessionLength <= 1}
+              disabled={sessionLength <= 1 || !isPaused}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -272,7 +269,7 @@ export default function Home() {
       <div className=" w-1/2 flex flex-row justify-center h-fit">
         <button id="start_stop" onClick={startStop}>
           <div>
-            {!timer && !isPaused && (
+            {!timer && isPaused && (
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"

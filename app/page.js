@@ -115,7 +115,7 @@ export default function Home() {
   }, [totalSeconds]);
 
   return (
-    <div className=" relative max-w-[100dvw] max-h-[100dvh] flex flex-col  justify-center  items-center ">
+    <div className=" relative w-[100dvw] h-[100dvh] flex flex-col  justify-center  items-center ">
       <Image
         src="/plaines.jpg"
         fill
@@ -141,6 +141,7 @@ export default function Home() {
               id="break-increment"
               className="hover:scale-110"
               onClick={incrementBreakLength}
+              disabled={breakLength >= 60}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -167,6 +168,7 @@ export default function Home() {
               id="break-decrement"
               className="hover:scale-110"
               onClick={decrementBreakLength}
+              disabled={breakLength <= 1}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -197,6 +199,7 @@ export default function Home() {
               id="session-increment"
               className="hover:scale-110"
               onClick={incrementSessionLength}
+              disabled={sessionLength >= 60}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -223,6 +226,7 @@ export default function Home() {
               id="session-decrement"
               className="hover:scale-110"
               onClick={decrementSessionLength}
+              disabled={sessionLength <= 1}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
